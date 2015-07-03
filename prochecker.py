@@ -20,6 +20,7 @@ USER = win32api.GetUserName()
 
 import ConfigParser
 import os.path
+import win32clipboard
 
 #sprawdzenie, czy solid chodzi:
 import win32pdh
@@ -463,6 +464,8 @@ class part:
 		self.open()
 		swx.ActivateDoc2(self['plik'],1,None)
 		self._modeldoc=sldmod.IModelDoc2(swx.ActiveDoc)
+	def getPartDoc(self):
+		self._partdoc = sldmod.PartDoc(self._modeldoc)
 	def Rebuild(self):
 		#self._modeldoc.Rebuild(1+2+8)
 		self._modeldoc.ForceRebuild3(False)
@@ -808,6 +811,16 @@ class part:
 	def finishEditingSketch(self):
 		#finishes editing currently edited sketch
 		self._modeldoc.InsertSketch2(True)
+	def getBox(self):
+		#gets part box (uses API function)
+		return self._modeldoc.GetBox
+	def link(self):
+		#inserts link to open doc to clipboard
+		FULL_PATH = self['full_path']
+		win32clipboard.OpenClipboard()
+		win32clipboard.EmptyClipboard()
+		win32clipboard.SetClipboardText('<file://'+FULL_PATH+'>', win32clipboard.CF_UNICODETEXT)
+		win32clipboard.CloseClipboard()
 
 def compare_filedate(file1, file2):
 	#porownanie dat dwoch plikow, jesli data modyfikacji file1 jest pozniejsza to zwraca 1, jezeli data file2 jest pozniejsza to zwraca 2, jesli sa rowne to zwraca 0
