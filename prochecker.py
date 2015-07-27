@@ -419,18 +419,59 @@ class whatwasdone:
 class part:
 	#klasa przechowuje informacje na temat czêœci maszyny
 	#mo¿e to byœ podzespó³ lub cz¹œæ
-	def __init__(self,dane):
-		self._dane=dane	#s³ownik zwracany przez funkcjê find_parts
-		#pole _class - klasa czêœci (np rolka)
-		self._class=None
-		#pole _PartNo - Numer czêœci
-		self._PartNo=None
-		#Pole _SubPartNo - subnumer czêœci (patrz Numerator.py)
-		self._SubPartNo=None
-		#Pole _drawings - na jakich rysunkach w projekcie znajduje siê czêœæ
-		self._drawings=[]
-		self._modeldoc=None
-		self._custom_info={}
+	def __init__(self,MOD = None, CONFIG = ""):
+		if isinstance(MOD, dict):
+			dane = MOD
+			self._dane=dane	#s³ownik zwracany przez funkcjê find_parts
+			#pole _class - klasa czêœci (np rolka)
+			self._class=None
+			#pole _PartNo - Numer czêœci
+			self._PartNo=None
+			#Pole _SubPartNo - subnumer czêœci (patrz Numerator.py)
+			self._SubPartNo=None
+			#Pole _drawings - na jakich rysunkach w projekcie znajduje siê czêœæ
+			self._drawings=[]
+			self._modeldoc=None
+			self._custom_info={}
+		else:
+			self._dane={}	#s³ownik zwracany przez funkcjê find_parts
+			#pole _class - klasa czêœci (np rolka)
+			self._class=None
+			#pole _PartNo - Numer czêœci
+			self._PartNo=None
+			#Pole _SubPartNo - subnumer czêœci (patrz Numerator.py)
+			self._SubPartNo=None
+			#Pole _drawings - na jakich rysunkach w projekcie znajduje siê czêœæ
+			self._drawings=[]
+			self._modeldoc=None
+			self._custom_info={}
+			if not MOD==None:
+				DOC=MOD
+			else:
+				DOC = sldmod.IModelDoc2(swx.ActiveDoc)            # get active document
+			SCIEZKA=(DOC.GetPathName())
+			#if not is_sw_file(SCIEZKA)==3:
+			#	return None
+			self['plik']=SCIEZKA[SCIEZKA.rindex('\\')+1:]
+			self['name']=self['plik'][0:self['plik'].rindex(".")]
+			self['katalog']=SCIEZKA[0:SCIEZKA.rindex('\\')+1]
+			self['path']=self['katalog']
+			self['full_path']=SCIEZKA
+			self["config"]=""
+			#teraz dane z modelu:
+			if (CONFIG=="") and (not is_sw_file(self['full_path'])==3):
+				cmgr=sldmod.IConfigurationManager(DOC.ConfigurationManager)
+				aConf=sldmod.IConfiguration(cmgr.ActiveConfiguration)
+				ConfName=aConf.Name
+				self['config']=ConfName
+			else:
+				self['config']=CONFIG
+			self['PartNo']=(DOC.GetCustomInfoValue(self["config"],"PartNo"))
+			if self['PartNo']=="":
+				self['PartNo']=(DOC.GetCustomInfoValue("","PartNo"))
+			self['SubPartNo']=(DOC.GetCustomInfoValue(self["config"],"SubPartNo"))
+			if self['SubPartNo']=="":
+				self['SubPartNo']=(DOC.GetCustomInfoValue("","SubPartNo"))
 	def __getitem__(self,item):
 		try:
 			return self._dane[item]
@@ -821,6 +862,9 @@ class part:
 		win32clipboard.EmptyClipboard()
 		win32clipboard.SetClipboardText('<file://'+FULL_PATH+'>', win32clipboard.CF_UNICODETEXT)
 		win32clipboard.CloseClipboard()
+	def explore(self):
+		#opens explorer window in location of part
+		win32api.WinExec('explorer '+self['path'].replace('/','\\'))
 
 def compare_filedate(file1, file2):
 	#porownanie dat dwoch plikow, jesli data modyfikacji file1 jest pozniejsza to zwraca 1, jezeli data file2 jest pozniejsza to zwraca 2, jesli sa rowne to zwraca 0
@@ -885,7 +929,7 @@ class empty_config:
 
 class draw(part):
 	#klasa do zarz¹dzania rysunkami:
-	def __init__(self,dane):
+	def __init__(self,dane = None):
 		part.__init__(self,dane)
 		self._parts=[]
 		self._drawingdoc = None
