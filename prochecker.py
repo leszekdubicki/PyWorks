@@ -1118,6 +1118,18 @@ class draw(part):
 		#zwraca nazwe pliku jak¹ zrzucam na laser
 		#nazwa_pliku-numer_rys.dwg
 		return self['name']+"-"+self.get_ci("PartNo")+".dwg"
+	def exportPdf(self):
+		#export pdf with revision
+		self.open()
+		self.activate()
+		nazwa_pliku = self['name'] + '-REV' + self.get_ci('Revision') + '.pdf'
+		katalog=self['katalog']
+		FULL_PATH = katalog+nazwa_pliku
+		ST=self._modeldoc.SaveAs2(FULL_PATH,0,True,False)
+		win32clipboard.OpenClipboard()
+		win32clipboard.EmptyClipboard()
+		win32clipboard.SetClipboardText('<file://'+FULL_PATH+'>', win32clipboard.CF_UNICODETEXT)
+		win32clipboard.CloseClipboard()
 	def saveas(self,katalog=".",nazwa_pliku="",format="dwg"):
 		self.open()
 		self.activate()
@@ -1150,7 +1162,11 @@ class draw(part):
 			#print "status: ",ST
 		elif format == 'pdf':
 			if len(nazwa_pliku) == 0:
-				nazwa_pliku = self['name']
+				nazwa_pliku = self['name'] + '.pdf'
+			if katalog==".":
+				katalog=self['katalog']
+			ST=self._modeldoc.SaveAs2(katalog+nazwa_pliku,0,True,False)
+		return '<file://' + katalog + nazwa_pliku + '>'
 	def create_folders(self, folders = ['archive', 'PDF_DXF_DWG','Analyse','Data sheets','Electronics','Other','Parts list','Standards']):
 		#tworzy w katalogu projektu foldery podane w liscie, zastepuje funkcje "archive"
 		if folders in [1,'a']:
@@ -1628,6 +1644,29 @@ class PatternSketch:
         SEGMENTS = slef.Sketch.GetSketchSegments
     #def setPositions(self, distances):
         #distances is list of dists between points. First point is always line point. Second point is always line point shared with sketch point. rest is 
+
+def activeModel():
+    MOD = get_data_from_model()
+    return MOD
+
+def activeDrawing():
+    MOD = get_data_from_drawing()
+    return MOD
+
+def amod():
+    return activeModel()
+def adrw():
+    return activeDrawing()
+
+class SWList:
+    def __init__(self):
+        self._list = []
+    def __getitem__(self, index):
+        return self._list[index]
+    def append(self, item):
+        #appends new drawing or model to the list
+        self._list.append(item)
+        print("added "+ item['name'])
 
 if __name__=="__main__":
 	P=project()

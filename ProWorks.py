@@ -17,6 +17,8 @@ class PPart(draw):
         wholePath = prefix  + '\\' + wholePath
         #print wholePath
         win32api.WinExec('explorer '+wholePath.replace('/','\\'))
+    def desProp(self):
+        swx.RunMacro('C:\Users\leszekd\Desktop\MACRO\Designer Custom Properties.swp','Print_A3_Landscape','main')
 
 def printList(list):
     #function to print all docs from list using PPC standard printing macro (need to add sheet format recognition)
@@ -31,3 +33,10 @@ def printList(list):
                 swx.RunMacro('C:\\Users\\leszekd\\Desktop\\MACRO\\Print A4.swp','Print_A41','main')
             else:
                 print('Sheet size not recognized')
+
+def addJF():
+    #function to create job form and fill some of the fields from the open SW assembly
+    #get currently open doc:
+    P = PPart()
+    
+    
