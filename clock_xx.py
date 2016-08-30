@@ -15,7 +15,7 @@ shell.AppActivate("sfdcclt"); time.sleep(1); p.click(100,100); k.tap_key(k.numpa
 p = PyMouse()
 k = PyKeyboard()
 shell = win32com.client.Dispatch("WScript.Shell")
-def cOff(complete = False):
+def cOff(complete = False, finalEnter = False):
     #fuction to clock off the job
     shell.AppActivate("sfdcclt") #activate clock program window
     time.sleep(0.1)
@@ -33,7 +33,8 @@ def cOff(complete = False):
     k.tap_key(k.enter_key, n=1)
     if complete:
         k.tap_key(k.numpad_keys['Add'], n=1)
-    #k.tap_key(k.enter_key, n=1)
+    if finalEnter == True:
+        k.tap_key(k.enter_key, n=1)
         
 def cOn(wo,op="05"):
     #fuction to clock off the job
@@ -53,3 +54,10 @@ def cOn(wo,op="05"):
     k.tap_key(k.enter_key, n=1)
     k.tap_key(k.enter_key, n=1)
     shell.SendKeys("204", 0)
+def switchTo(wo, op="05", complete = False):
+    #function to switch to other job
+    cOff(complete, True)
+    cOn(wo, op)
+
+def unplanned():
+    cOn("wo1274","20")
